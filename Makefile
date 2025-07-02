@@ -145,4 +145,45 @@ ci-build: ## Build using production config (same as GitHub Actions)
 	@echo "🔄 Restoring original configuration..."
 	@mv package.json.backup package.json
 	@mv nuxt.config.backup.ts nuxt.config.ts
-	@echo "✅ Production build completed successfully" 
+	@echo "✅ Production build completed successfully"
+
+# DigitalOcean specific commands
+.PHONY: docker-build-do docker-run-do docker-stop-do deploy-do-prep
+
+docker-build-do: ## Build Docker image for DigitalOcean (port 80)
+	@echo "🐳 Building Docker image for DigitalOcean..."
+	@make generate
+	$(DOCKER_CMD) build -f Dockerfile.do -t docs-ui:do-latest .
+	@echo "✅ DigitalOcean Docker image built!"
+
+docker-run-do: ## Run DigitalOcean Docker image locally for testing (maps port 80->8080)
+	@echo "🚀 Running DigitalOcean Docker image locally..."
+	$(DOCKER_CMD) run -d --name docs-ui-do -p 8080:80 docs-ui:do-latest
+	@echo "📝 DigitalOcean container running at http://localhost:8080"
+
+docker-stop-do: ## Stop DigitalOcean Docker container
+	@echo "🛑 Stopping DigitalOcean Docker container..."
+	@$(DOCKER_CMD) stop docs-ui-do 2>/dev/null || true
+	@$(DOCKER_CMD) rm docs-ui-do 2>/dev/null || true
+	@echo "✅ DigitalOcean container stopped!"
+
+deploy-do-prep: ## Prepare for DigitalOcean deployment (build + test DO image)
+	@echo "🚀 Preparing for DigitalOcean deployment..."
+	@make generate
+	@make lint
+	@make docker-build-do
+	@echo "🧪 Testing DigitalOcean image..."
+	@$(DOCKER_CMD) run -d --name test-do-container -p 8081:80 docs-ui:do-latest
+	@sleep 3
+	@if curl -f http://localhost:8081/health > /dev/null 2>&1; then \
+		echo "✅ DigitalOcean container test passed"; \
+		$(DOCKER_CMD) stop test-do-container; \
+		$(DOCKER_CMD) rm test-do-container; \
+	else \
+		echo "❌ DigitalOcean container test failed"; \
+		$(DOCKER_CMD) logs test-do-container; \
+		$(DOCKER_CMD) stop test-do-container; \
+		$(DOCKER_CMD) rm test-do-container; \
+		exit 1; \
+	fi
+	@echo "✅ Ready for DigitalOcean deployment!" 
