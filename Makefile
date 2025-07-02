@@ -64,7 +64,7 @@ docker-build-dev: ## Build Docker image with full build process (may fail due to
 	$(DOCKER_CMD) build -f Dockerfile -t docs-ui .
 
 docker-run: ## Run Docker container
-	$(DOCKER_CMD) run -d -p 8080:80 --name docs-ui-container docs-ui
+	$(DOCKER_CMD) run -d -p 8080:8080 --name docs-ui-container docs-ui
 
 docker-stop: ## Stop Docker container
 	$(DOCKER_CMD) stop docs-ui-container || true
@@ -107,7 +107,7 @@ ci: install lint build ## CI/CD pipeline commands
 
 ci-docker: install lint generate docker-build ## Full CI with Docker testing
 	@echo "🐳 Testing Docker container..."
-	@$(DOCKER_CMD) run -d --name test-container -p 8080:80 docs-ui:latest
+	@$(DOCKER_CMD) run -d --name test-container -p 8080:8080 docs-ui:latest
 	@sleep 3
 	@if curl -f http://localhost:8080 > /dev/null 2>&1; then \
 		echo "✅ Docker container test passed"; \

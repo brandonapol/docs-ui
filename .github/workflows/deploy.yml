@@ -66,7 +66,7 @@ jobs:
     - name: Test Docker container
       run: |
         echo "🧪 Testing Docker container..."
-        docker run -d --name test-container -p 8080:80 docs-ui:test
+        docker run -d --name test-container -p 8080:8080 docs-ui:test
         sleep 5
         
         # Test that the server responds
