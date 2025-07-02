@@ -1,12 +1,12 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   devtools: { enabled: false },
-  
+
   // Configure base URL based on deployment target
   app: {
     baseURL: process.env.GITHUB_PAGES === 'true' ? '/docs-ui/' : '/',
   },
-  
+
   modules: [
     '@nuxt/content',
     '@nuxtjs/tailwindcss',
