@@ -116,10 +116,23 @@ ci-local: ## Run complete CI pipeline locally (same as GitHub Actions)
 	@echo "🚀 Running local CI pipeline..."
 	@echo "Step 1: Linting..."
 	@make lint
-	@echo "Step 2: Building..."
-	@make generate
+	@echo "Step 2: Building (production config)..."
+	@make ci-build
 	@echo "Step 3: Docker build test..."
 	@make docker-build
 	@echo "Step 4: Docker container test..."
 	@make ci-docker
-	@echo "✅ Local CI pipeline completed - ready for deployment!" 
+	@echo "✅ Local CI pipeline completed - ready for deployment!"
+
+ci-build: ## Build using production config (same as GitHub Actions)
+	@echo "🏭 Building with production configuration (no ESLint dependencies)..."
+	@cp package.docker.json package.json.backup
+	@cp nuxt.config.docker.ts nuxt.config.backup.ts
+	@cp package.docker.json package.json
+	@cp nuxt.config.docker.ts nuxt.config.ts
+	@npm ci --no-fund --silent
+	@npm run generate
+	@echo "🔄 Restoring original configuration..."
+	@mv package.json.backup package.json
+	@mv nuxt.config.backup.ts nuxt.config.ts
+	@echo "✅ Production build completed successfully" 

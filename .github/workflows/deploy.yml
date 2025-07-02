@@ -48,13 +48,19 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Use production package.json (without ESLint)
+      run: |
+        echo "Using production package configuration to avoid native binding issues..."
+        cp package.docker.json package.json
+        cp nuxt.config.docker.ts nuxt.config.ts
+        
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
         
-    - name: Install dependencies
+    - name: Install production dependencies
       run: npm ci
       
     - name: Generate static site
@@ -62,7 +68,7 @@ jobs:
       
     - name: Test Docker build
       run: |
-        echo "🐳 Testing Docker build..."
+        echo "🐳 Testing Docker build with production files..."
         docker build -f Dockerfile.static -t docs-ui:test .
         echo "✅ Docker build successful"
         

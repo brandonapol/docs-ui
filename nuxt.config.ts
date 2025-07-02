@@ -1,10 +1,10 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   modules: [
     '@nuxt/content',
-    '@nuxtjs/tailwindcss',
-    '@nuxt/eslint'
+    '@nuxtjs/tailwindcss'
+    // '@nuxt/eslint' - disabled for Docker builds
   ],
   content: {
     highlight: {

@@ -235,6 +235,7 @@ make docker-run
 
 **CI/CD Testing:**
 - `make ci` - Basic CI pipeline (install + lint + build)
+- `make ci-build` - Build using production config (no ESLint dependencies)
 - `make ci-docker` - Full CI with Docker testing
 - `make ci-local` - Complete local CI pipeline (same as GitHub Actions)
 
@@ -245,10 +246,11 @@ The static files will be in the `.output/public/` directory.
 This project includes a comprehensive GitHub Actions workflow that automatically:
 
 ### ✅ **Automated Testing**
-- **Code Quality**: ESLint checks on every push and PR
-- **Build Testing**: Generates static site and validates output
+- **Code Quality**: ESLint checks on every push and PR (development environment)
+- **Build Testing**: Generates static site using production config (no ESLint dependencies)
 - **Docker Testing**: Builds container and tests HTTP responses
 - **Multi-environment**: Tests on Node.js 20 with Ubuntu latest
+- **Native Binding Solution**: Automatically switches to production package.json in CI to avoid oxc-parser issues
 
 ### 🚀 **Automated Deployment**
 - **Main Branch**: Auto-deploys to GitHub Pages on every push to `main`
@@ -298,10 +300,20 @@ The CI/CD pipeline runs on:
 - **Pull Requests to `main`**: Full pipeline + preview deployment
 
 **Pipeline Stages:**
-1. **Lint** → ESLint code quality checks
-2. **Build** → Static site generation + Docker build/test
-3. **Deploy** → GitHub Pages deployment (main branch only)
-4. **Preview** → Preview deployment (PRs only)
+1. **Lint** → ESLint code quality checks (development dependencies)
+2. **Build** → Static site generation using production config (avoids native binding issues)
+3. **Test** → Docker container build and HTTP response testing
+4. **Deploy** → GitHub Pages deployment (main branch only)
+5. **Preview** → Preview deployment (PRs only)
+
+### 🔧 **Native Binding Solution**
+
+The CI/CD pipeline automatically handles the `oxc-parser` native binding issues by:
+- **Lint Job**: Uses full `package.json` with ESLint dependencies (works in GitHub Actions)
+- **Build Job**: Switches to `package.docker.json` without ESLint dependencies
+- **Local Testing**: `make ci-build` replicates the same production build process
+
+This approach ensures reliable builds across all environments while maintaining code quality checks.
 
 ### Deployment Platforms
 
