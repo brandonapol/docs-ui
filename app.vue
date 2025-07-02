@@ -8,7 +8,7 @@
 // Global configuration
 useHead({
   htmlAttrs: {
-    lang: 'en'
-  }
+    lang: 'en',
+  },
 })
 </script> 

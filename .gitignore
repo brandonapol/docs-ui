@@ -87,3 +87,6 @@ generate/
 
 # Local netlify folder
 .netlify/
+
+.dist/
+dist/

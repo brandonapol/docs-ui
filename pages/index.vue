@@ -134,8 +134,12 @@ import Fuse from 'fuse.js'
 useHead({
   title: 'DOCS - Comprehensive Documentation',
   meta: [
-    { name: 'description', content: 'Comprehensive documentation for developers, designers, and teams. Find guides, API references, and troubleshooting tips.' }
-  ]
+    {
+      name: 'description',
+      content:
+        'Comprehensive documentation for developers, designers, and teams. Find guides, API references, and troubleshooting tips.',
+    },
+  ],
 })
 
 // Search functionality
@@ -151,16 +155,16 @@ const { data: searchDocs } = await useLazyAsyncData('search-docs', () =>
 // Configure Fuse.js for fuzzy search
 const fuse = computed(() => {
   if (!searchDocs.value) return null
-  
+
   return new Fuse(searchDocs.value, {
     keys: [
       { name: 'title', weight: 0.4 },
       { name: 'description', weight: 0.3 },
       { name: 'body', weight: 0.2 },
-      { name: 'category', weight: 0.1 }
+      { name: 'category', weight: 0.1 },
     ],
     threshold: 0.4,
-    includeScore: true
+    includeScore: true,
   })
 })
 
@@ -170,7 +174,7 @@ const performSearch = () => {
     searchResults.value = []
     return
   }
-  
+
   const results = fuse.value.search(searchQuery.value.trim())
   searchResults.value = results
 }

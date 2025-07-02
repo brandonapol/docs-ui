@@ -3,7 +3,7 @@
 # Detect available container runtime
 DOCKER_CMD := $(shell command -v docker 2> /dev/null || command -v podman 2> /dev/null || echo "docker")
 
-.PHONY: help install dev build generate preview lint fix clean docker-build docker-run docker-clean test audit
+.PHONY: help install dev build generate preview lint fix clean docker-build docker-run docker-clean test audit format check
 
 # Default target
 help: ## Show this help message
@@ -27,11 +27,21 @@ preview: ## Preview the built application
 	npm run preview
 
 # Code quality commands
-lint: ## Run ESLint to check code quality
+lint:
+	@echo "🔍 Running Biome linting..."
 	npm run lint
 
-fix: ## Auto-fix ESLint issues
+fix:
+	@echo "🔧 Fixing linting issues..."
 	npm run lint:fix
+
+format:
+	@echo "💅 Formatting code..."
+	npm run format
+
+check:
+	@echo "✅ Running complete code quality check..."
+	npm run check
 
 # Maintenance commands
 clean: ## Clean build artifacts and caches

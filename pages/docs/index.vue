@@ -114,16 +114,17 @@
 useHead({
   title: 'All Documentation',
   meta: [
-    { name: 'description', content: 'Browse our complete collection of documentation including guides, API references, and troubleshooting tips.' }
-  ]
+    {
+      name: 'description',
+      content:
+        'Browse our complete collection of documentation including guides, API references, and troubleshooting tips.',
+    },
+  ],
 })
 
 // Load all documents
 const { data: docs, pending } = await useLazyAsyncData('docs-list', () =>
-  queryContent()
-    .where({ _partial: false })
-    .sort({ createdAt: -1, title: 1 })
-    .find()
+  queryContent().where({ _partial: false }).sort({ createdAt: -1, title: 1 }).find()
 )
 
 // Category filtering
@@ -132,20 +133,20 @@ const selectedCategory = ref(null)
 // Get unique categories
 const categories = computed(() => {
   if (!docs.value) return []
-  
-  const uniqueCategories = [...new Set(docs.value.map(doc => doc.category))]
+
+  const uniqueCategories = [...new Set(docs.value.map((doc) => doc.category))]
   return uniqueCategories.filter(Boolean).sort()
 })
 
 // Filter documents by category
 const filteredDocs = computed(() => {
   if (!docs.value) return []
-  
+
   if (selectedCategory.value === null) {
     return docs.value
   }
-  
-  return docs.value.filter(doc => doc.category === selectedCategory.value)
+
+  return docs.value.filter((doc) => doc.category === selectedCategory.value)
 })
 
 // Get category color classes
@@ -155,21 +156,21 @@ const getCategoryColor = (category) => {
     reference: 'bg-blue-100 text-blue-800',
     advanced: 'bg-purple-100 text-purple-800',
     support: 'bg-red-100 text-red-800',
-    default: 'bg-gray-100 text-gray-800'
+    default: 'bg-gray-100 text-gray-800',
   }
-  
+
   return colors[category] || colors.default
 }
 
 // Format date helper
 const formatDate = (dateString) => {
   if (!dateString) return ''
-  
+
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 </script>

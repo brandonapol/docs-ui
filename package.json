@@ -9,8 +9,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "biome lint .",
-    "lint:fix": "biome lint --apply .",
-    "format": "biome format --write .",
+    "lint:fix": "biome lint . --write",
+    "format": "biome format . --write",
     "check": "biome check ."
   },
   "engines": {
@@ -33,4 +33,4 @@
   "overrides": {
     "@nuxtjs/mdc": "^0.15.0"
   }
-} 
+}

@@ -3,13 +3,13 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: [
     '@nuxt/content',
-    '@nuxtjs/tailwindcss'
+    '@nuxtjs/tailwindcss',
     // '@nuxt/eslint' - disabled for Docker builds
   ],
   content: {
     highlight: {
-      theme: 'github-dark'
-    }
+      theme: 'github-dark',
+    },
   },
   css: ['~/assets/css/main.css'],
   nitro: {
@@ -18,11 +18,11 @@ export default defineNuxtConfig({
       failOnError: false,
       routes: [
         '/getting-started',
-        '/quick-start', 
+        '/quick-start',
         '/api-reference',
         '/advanced-features',
-        '/troubleshooting'
-      ]
-    }
-  }
-}) 
+        '/troubleshooting',
+      ],
+    },
+  },
+})

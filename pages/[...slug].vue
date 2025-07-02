@@ -132,7 +132,7 @@ const { data: document, pending } = await useLazyAsyncData(`doc-${route.params.s
 if (!document.value && !pending.value) {
   throw createError({
     statusCode: 404,
-    statusMessage: 'Document not found'
+    statusMessage: 'Document not found',
   })
 }
 
@@ -144,15 +144,15 @@ const { data: allDocs } = await useLazyAsyncData('nav-docs', () =>
 // Find previous and next documents
 const prevDoc = computed(() => {
   if (!allDocs.value || !document.value) return null
-  
-  const currentIndex = allDocs.value.findIndex(doc => doc._path === document.value._path)
+
+  const currentIndex = allDocs.value.findIndex((doc) => doc._path === document.value._path)
   return currentIndex > 0 ? allDocs.value[currentIndex - 1] : null
 })
 
 const nextDoc = computed(() => {
   if (!allDocs.value || !document.value) return null
-  
-  const currentIndex = allDocs.value.findIndex(doc => doc._path === document.value._path)
+
+  const currentIndex = allDocs.value.findIndex((doc) => doc._path === document.value._path)
   return currentIndex < allDocs.value.length - 1 ? allDocs.value[currentIndex + 1] : null
 })
 
@@ -164,8 +164,8 @@ useHead(() => ({
     { property: 'og:title', content: document.value?.title },
     { property: 'og:description', content: document.value?.description },
     { property: 'og:type', content: 'article' },
-    { property: 'article:published_time', content: document.value?.createdAt }
-  ]
+    { property: 'article:published_time', content: document.value?.createdAt },
+  ],
 }))
 
 // Get category color classes
@@ -175,21 +175,21 @@ const getCategoryColor = (category) => {
     reference: 'bg-blue-100 text-blue-800',
     advanced: 'bg-purple-100 text-purple-800',
     support: 'bg-red-100 text-red-800',
-    default: 'bg-gray-100 text-gray-800'
+    default: 'bg-gray-100 text-gray-800',
   }
-  
+
   return colors[category] || colors.default
 }
 
 // Format date helper
 const formatDate = (dateString) => {
   if (!dateString) return ''
-  
+
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 </script>
