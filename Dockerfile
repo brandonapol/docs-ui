@@ -1,62 +1,80 @@
-# Multi-stage build for Nuxt.js application
+# Multi-environment Dockerfile
+# Build stage
+FROM node:20-slim AS builder
 
-# Stage 1: Build the application
-FROM --platform=linux/amd64 node:20-slim AS builder
-
-# Set working directory
 WORKDIR /app
 
-# Copy Docker-specific package files (without ESLint dependencies)
+# Copy package files
 COPY package.docker.json package.json
-COPY package-lock.json ./
+COPY package-lock.json .
+COPY .npmrc .
 
-# Install dependencies for production build
-RUN npm ci --no-fund --omit=dev
+# Install dependencies 
+RUN npm ci --omit=dev --silent
 
-# Copy source code and Docker config
+# Copy source code
 COPY . .
-COPY nuxt.config.docker.ts ./
 
-# Generate static site (simpler approach)
-RUN NUXT_CONFIG_FILE=nuxt.config.docker.ts npm run generate || npm run build || echo "Build failed, using fallback"
+# Copy DigitalOcean-specific config
+COPY nuxt.config.docker.ts nuxt.config.ts
 
-# Stage 2: Production server with nginx
-FROM --platform=linux/amd64 nginx:1.25-alpine AS production
+# Build the application
+RUN npm run generate
 
-# Install bash and curl for debugging and health checks
+# Production stage
+FROM nginx:alpine
+
+# Install bash and curl for health checks and scripting
 RUN apk add --no-cache bash curl
 
-# Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy both nginx configurations
+COPY nginx.conf /etc/nginx/nginx.conf.local
+COPY nginx.conf.do /etc/nginx/nginx.conf.do
 
-# Copy built application from builder stage
+# Copy built application
 COPY --from=builder /app/.output/public /usr/share/nginx/html
 
-# Create nginx cache directories
+# Create nginx cache directories and set permissions
 RUN mkdir -p /var/cache/nginx/client_temp \
     /var/cache/nginx/proxy_temp \
     /var/cache/nginx/fastcgi_temp \
     /var/cache/nginx/uwsgi_temp \
-    /var/cache/nginx/scgi_temp
-
-# Set proper permissions
-RUN chown -R nginx:nginx /var/cache/nginx \
+    /var/cache/nginx/scgi_temp \
+    && chown -R nginx:nginx /var/cache/nginx \
     && chown -R nginx:nginx /usr/share/nginx/html \
     && chown -R nginx:nginx /var/log/nginx
 
-# Create a non-root user for nginx
+# Create startup script that chooses the right config
+RUN echo '#!/bin/bash' > /start.sh && \
+    echo 'if [ "$DIGITALOCEAN" = "true" ] || [ -n "$DO_APP_PLATFORM" ] || [ -n "$APP_PLATFORM" ]; then' >> /start.sh && \
+    echo '  echo "Detected DigitalOcean environment, using port 80"' >> /start.sh && \
+    echo '  cp /etc/nginx/nginx.conf.do /etc/nginx/nginx.conf' >> /start.sh && \
+    echo '  export PORT=80' >> /start.sh && \
+    echo 'else' >> /start.sh && \
+    echo '  echo "Using local environment, using port 8080"' >> /start.sh && \
+    echo '  cp /etc/nginx/nginx.conf.local /etc/nginx/nginx.conf' >> /start.sh && \
+    echo '  export PORT=8080' >> /start.sh && \
+    echo 'fi' >> /start.sh && \
+    echo 'exec nginx -g "daemon off;"' >> /start.sh && \
+    chmod +x /start.sh
+
+# Create non-root user (for local development)
 RUN addgroup -g 1001 -S nodejs \
     && adduser -S nextjs -u 1001 -G nodejs
 
-# Switch to non-root user
+# Run as nginx user
 USER nginx
 
-# Expose port 8080
-EXPOSE 8080
+# Expose both ports (the startup script will determine which to use)
+EXPOSE 80 8080
 
-# Health check
+# Smart health check that uses the right port
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/ || exit 1
+    CMD if [ "$DIGITALOCEAN" = "true" ] || [ -n "$DO_APP_PLATFORM" ] || [ -n "$APP_PLATFORM" ]; then \
+        curl -f http://localhost:80/health || exit 1; \
+    else \
+        curl -f http://localhost:8080/health || exit 1; \
+    fi
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"] 
+# Use the smart startup script
+CMD ["/start.sh"] 

@@ -148,7 +148,7 @@ ci-build: ## Build using production config (same as GitHub Actions)
 	@echo "✅ Production build completed successfully"
 
 # DigitalOcean specific commands
-.PHONY: docker-build-do docker-run-do docker-stop-do deploy-do-prep
+.PHONY: docker-build-do docker-run-do docker-stop-do deploy-do-prep test-smart-docker
 
 docker-build-do: ## Build Docker image for DigitalOcean (port 80)
 	@echo "🐳 Building Docker image for DigitalOcean..."
@@ -186,4 +186,39 @@ deploy-do-prep: ## Prepare for DigitalOcean deployment (build + test DO image)
 		$(DOCKER_CMD) rm test-do-container; \
 		exit 1; \
 	fi
-	@echo "✅ Ready for DigitalOcean deployment!" 
+	@echo "✅ Ready for DigitalOcean deployment!"
+
+# Test the smart Dockerfile locally
+test-smart-docker: ## Test the environment-aware Dockerfile locally
+	@echo "🧪 Testing smart Dockerfile locally..."
+	@make generate
+	$(DOCKER_CMD) build -t docs-ui:smart .
+	@echo "🚀 Testing with local environment (port 8080)..."
+	$(DOCKER_CMD) run -d --name test-smart-local -p 8080:8080 docs-ui:smart
+	@sleep 3
+	@if curl -f http://localhost:8080/health > /dev/null 2>&1; then \
+		echo "✅ Local environment test passed"; \
+		$(DOCKER_CMD) stop test-smart-local; \
+		$(DOCKER_CMD) rm test-smart-local; \
+	else \
+		echo "❌ Local environment test failed"; \
+		$(DOCKER_CMD) logs test-smart-local; \
+		$(DOCKER_CMD) stop test-smart-local; \
+		$(DOCKER_CMD) rm test-smart-local; \
+		exit 1; \
+	fi
+	@echo "🌊 Testing with DigitalOcean environment (port 80)..."
+	$(DOCKER_CMD) run -d --name test-smart-do -p 8081:80 -e DIGITALOCEAN=true docs-ui:smart
+	@sleep 3
+	@if curl -f http://localhost:8081/health > /dev/null 2>&1; then \
+		echo "✅ DigitalOcean environment test passed"; \
+		$(DOCKER_CMD) stop test-smart-do; \
+		$(DOCKER_CMD) rm test-smart-do; \
+	else \
+		echo "❌ DigitalOcean environment test failed"; \
+		$(DOCKER_CMD) logs test-smart-do; \
+		$(DOCKER_CMD) stop test-smart-do; \
+		$(DOCKER_CMD) rm test-smart-do; \
+		exit 1; \
+	fi
+	@echo "🎉 Smart Dockerfile works in both environments!" 

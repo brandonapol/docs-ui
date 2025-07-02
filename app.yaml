@@ -21,4 +21,8 @@ services:
     failure_threshold: 3
   envs:
   - key: NODE_ENV
-    value: production 
+    value: production
+  - key: DIGITALOCEAN
+    value: "true"
+  - key: DO_APP_PLATFORM
+    value: "true" 
