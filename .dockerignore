@@ -30,7 +30,7 @@ bower_components
 build/Release
 
 # Dependency directories
-jspm_packages/
+jspm_packages
 
 # TypeScript cache
 *.tsbuildinfo
@@ -42,10 +42,10 @@ jspm_packages/
 .eslintcache
 
 # Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
+.rpt2_cache
+.rts2_cache_cjs
+.rts2_cache_es
+.rts2_cache_umd
 
 # Optional REPL history
 .node_repl_history
@@ -75,7 +75,6 @@ dist
 .output
 
 # Gatsby files
-.cache/
 public
 
 # Storybook build outputs
@@ -83,8 +82,8 @@ public
 .storybook-out
 
 # Temporary folders
-tmp/
-temp/
+tmp
+temp
 
 # Logs
 logs
@@ -92,16 +91,15 @@ logs
 
 # Editor directories and files
 .vscode/*
-!.vscode/extensions.json
+! .vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# OS generated files
+# OS generated files (consolidated and deduplicated)
 Thumbs.db
 .DS_Store
 .DS_Store?
@@ -113,31 +111,37 @@ ehthumbs.db
 # Git
 .git
 .gitignore
-README.md
 
 # Docker
 Dockerfile
 docker-compose*.yml
 .dockerignore
 
-# Documentation
-docs/
-*.md
+# Specific documentation files (more targeted than *.md)
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE.md
 
 # Test files
-test/
-tests/
-__tests__/
+test
+tests
+__tests__
 *.test.js
 *.spec.js
+*.test.ts
+*.spec.ts
 
 # CI/CD
-.github/
+.github
 .gitlab-ci.yml
 .travis.yml
-.circleci/
+.circleci
 
-# Package manager files
-package-lock.json
+# Package manager lock files that aren't npm
 yarn.lock
-pnpm-lock.yaml 
+pnpm-lock.yaml
+
+# Development and debugging
+*.map
+*.orig 
