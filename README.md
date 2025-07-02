@@ -5,6 +5,136 @@
 
 A beautiful, modern documentation website built with Nuxt 3 and Nuxt Content.
 
+## Features
+
+- **Modern Stack**: Nuxt 3, Vue 3, TypeScript
+- **Content Management**: Nuxt Content with Markdown support  
+- **Beautiful UI**: Tailwind CSS with responsive design
+- **Code Quality**: Biome for fast linting and formatting
+- **SEO Optimized**: Meta tags, sitemap, structured data
+- **Developer Experience**: Hot reload, TypeScript support
+- **Production Ready**: Docker support, CI/CD pipeline
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20.9.0 or higher
+- npm 10.0.0 or higher
+
+### Installation
+
+```bash
+git clone <repository-url>
+cd docs-ui
+npm install
+```
+
+### Development
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:3000` to see your site.
+
+### Available Make Commands
+
+**Development:**
+- `make dev` - Start development server
+- `make lint` - Check code quality with Biome
+- `make fix` - Auto-fix linting issues with Biome
+- `make format` - Format code with Biome
+- `make clean` - Clean build artifacts
+
+**Building:**
+- `make generate` - Generate static files
+- `make docker-build` - Build Docker image (production-ready)
+- `make deploy-prep` - Complete deployment preparation
+
+**CI/CD Testing:**
+- `make ci` - Basic CI pipeline (install + lint + build)
+- `make ci-build` - Build using production config (no linting dependencies)
+- `make ci-docker` - Full CI with Docker testing
+- `make ci-local` - Complete local CI pipeline (same as GitHub Actions)
+
+The static files will be in the `.output/public/` directory.
+
+## 🔄 CI/CD Pipeline
+
+This project includes a comprehensive GitHub Actions workflow that automatically:
+
+### ✅ **Automated Testing**
+- **Code Quality**: Biome linting and formatting checks on every push and PR
+- **Build Testing**: Generates static site using production config (no linting dependencies)
+- **Docker Testing**: Builds container and tests HTTP responses
+- **Multi-environment**: Tests on Node.js 20 with Ubuntu latest
+- **Zero Dependencies**: Biome avoids native binding issues completely
+
+### 🚀 **Automated Deployment**
+- **Main Branch**: Auto-deploys to GitHub Pages on every push to `main`
+- **Pull Requests**: Creates preview deployments on `gh-pages-preview` branch
+- **Peaceiris Integration**: Uses `peaceiris/actions-gh-pages` for reliable deployments
+
+### 🌐 **GitHub Pages Setup**
+
+**Quick Setup:**
+```bash
+# Run the setup script to configure GitHub Pages
+./scripts/setup-github-pages.sh
+```
+
+**Manual Setup:**
+1. Go to your repository settings
+2. Navigate to "Pages" section
+3. Set source to "GitHub Actions"
+4. Push to `main` branch to trigger deployment
+
+**URLs:**
+- **Production**: `https://yourusername.github.io/docs-ui`
+- **Preview**: `https://yourusername.github.io/docs-ui` (branch: `gh-pages-preview`)
+
+### 🧪 **Local Testing**
+
+Test the complete CI pipeline locally before pushing:
+
+```bash
+# Run the same checks as GitHub Actions
+make ci-local
+
+# Test just Docker builds
+make ci-docker
+
+# Quick development checks
+make lint
+make generate
+```
+
+### 🔧 **Workflow Triggers**
+
+The CI/CD pipeline runs on:
+
+- **Push to `main`**: Full pipeline + deployment to GitHub Pages
+- **Push to `develop`**: Full pipeline (no deployment)  
+- **Pull Requests to `main`**: Full pipeline + preview deployment
+
+**Pipeline Stages:**
+1. **Lint** → Biome code quality and formatting checks
+2. **Build** → Static site generation using production config (avoids dependency issues)
+3. **Test** → Docker container build and HTTP response testing
+4. **Deploy** → GitHub Pages deployment (main branch only)
+5. **Preview** → Preview deployment (PRs only)
+
+### 🔧 **Biome Integration**
+
+The CI/CD pipeline uses **Biome** for linting and formatting because:
+- **Fast**: Rust-based, extremely fast performance
+- **Reliable**: No native binding issues in containers or CI
+- **Modern**: Built-in formatter and linter in one tool
+- **Zero Config**: Works great out of the box for JavaScript/TypeScript
+
+This approach ensures reliable builds across all environments while maintaining code quality checks.
+
 ## ✨ Features
 
 - 🚀 **Nuxt 3** - Latest version with Vue 3, TypeScript, and Vite
@@ -218,138 +348,6 @@ make docker-build
 
 # Run the container
 make docker-run
-```
-
-### Available Make Commands
-
-**Development:**
-- `make dev` - Start development server
-- `make lint` - Check code quality with ESLint
-- `make fix` - Auto-fix ESLint issues
-- `make clean` - Clean build artifacts
-
-**Building:**
-- `make generate` - Generate static files
-- `make docker-build` - Build Docker image (production-ready)
-- `make deploy-prep` - Complete deployment preparation
-
-**CI/CD Testing:**
-- `make ci` - Basic CI pipeline (install + lint + build)
-- `make ci-build` - Build using production config (no ESLint dependencies)
-- `make ci-docker` - Full CI with Docker testing
-- `make ci-local` - Complete local CI pipeline (same as GitHub Actions)
-
-The static files will be in the `.output/public/` directory.
-
-## 🔄 CI/CD Pipeline
-
-This project includes a comprehensive GitHub Actions workflow that automatically:
-
-### ✅ **Automated Testing**
-- **Code Quality**: ESLint checks on every push and PR (development environment)
-- **Build Testing**: Generates static site using production config (no ESLint dependencies)
-- **Docker Testing**: Builds container and tests HTTP responses
-- **Multi-environment**: Tests on Node.js 20 with Ubuntu latest
-- **Native Binding Solution**: Automatically switches to production package.json in CI to avoid oxc-parser issues
-
-### 🚀 **Automated Deployment**
-- **Main Branch**: Auto-deploys to GitHub Pages on every push to `main`
-- **Pull Requests**: Creates preview deployments on `gh-pages-preview` branch
-- **Peaceiris Integration**: Uses `peaceiris/actions-gh-pages` for reliable deployments
-
-### 🌐 **GitHub Pages Setup**
-
-**Quick Setup:**
-```bash
-# Run the setup script to configure GitHub Pages
-./scripts/setup-github-pages.sh
-```
-
-**Manual Setup:**
-1. Go to your repository settings
-2. Navigate to "Pages" section
-3. Set source to "GitHub Actions"
-4. Push to `main` branch to trigger deployment
-
-**URLs:**
-- **Production**: `https://yourusername.github.io/docs-ui`
-- **Preview**: `https://yourusername.github.io/docs-ui` (branch: `gh-pages-preview`)
-
-### 🧪 **Local Testing**
-
-Test the complete CI pipeline locally before pushing:
-
-```bash
-# Run the same checks as GitHub Actions
-make ci-local
-
-# Test just Docker builds
-make ci-docker
-
-# Quick development checks
-make lint
-make generate
-```
-
-### 🔧 **Workflow Triggers**
-
-The CI/CD pipeline runs on:
-
-- **Push to `main`**: Full pipeline + deployment to GitHub Pages
-- **Push to `develop`**: Full pipeline (no deployment)  
-- **Pull Requests to `main`**: Full pipeline + preview deployment
-
-**Pipeline Stages:**
-1. **Lint** → ESLint code quality checks (development dependencies)
-2. **Build** → Static site generation using production config (avoids native binding issues)
-3. **Test** → Docker container build and HTTP response testing
-4. **Deploy** → GitHub Pages deployment (main branch only)
-5. **Preview** → Preview deployment (PRs only)
-
-### 🔧 **Native Binding Solution**
-
-The CI/CD pipeline automatically handles the `oxc-parser` native binding issues by:
-- **Lint Job**: Uses full `package.json` with ESLint dependencies (works in GitHub Actions)
-- **Build Job**: Switches to `package.docker.json` without ESLint dependencies
-- **Local Testing**: `make ci-build` replicates the same production build process
-
-This approach ensures reliable builds across all environments while maintaining code quality checks.
-
-### Deployment Platforms
-
-**Netlify:**
-```bash
-# Build command
-npm run generate
-
-# Publish directory
-.output/public
-```
-
-**Vercel:**
-```bash
-# Framework preset: Nuxt.js
-# Build command: npm run build
-# Output directory: .output/public
-```
-
-**GitHub Pages:**
-1. Push to GitHub
-2. Enable GitHub Pages in repository settings
-3. Set source to GitHub Actions
-4. Use the Nuxt GitHub Pages action
-
-**Nginx:**
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-    root /path/to/.output/public;
-    
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
 ```
 
 ## 🤝 Contributing
