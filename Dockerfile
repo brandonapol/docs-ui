@@ -29,9 +29,8 @@ RUN apk add --no-cache bash curl
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy built application from builder stage (try both possible output locations)
-COPY --from=builder /app/.output/public /usr/share/nginx/html 2>/dev/null || \
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Copy built application from builder stage
+COPY --from=builder /app/.output/public /usr/share/nginx/html
 
 # Create nginx cache directories
 RUN mkdir -p /var/cache/nginx/client_temp \
@@ -52,12 +51,12 @@ RUN addgroup -g 1001 -S nodejs \
 # Switch to non-root user
 USER nginx
 
-# Expose port 80
-EXPOSE 80
+# Expose port 8080
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:80/ || exit 1
+    CMD curl -f http://localhost:8080/ || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"] 

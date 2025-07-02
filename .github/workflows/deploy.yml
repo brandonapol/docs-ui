@@ -55,6 +55,8 @@ jobs:
       run: npm ci
       
     - name: Generate static site
+      env:
+        GITHUB_PAGES: true
       run: npm run generate
       
     - name: Test Docker build
