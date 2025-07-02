@@ -1,0 +1,89 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Nuxt.js build / generate output
+.nuxt/
+.output/
+.nitro/
+dist/
+
+# Nuxt.js cache
+.nuxt-cache/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Temporary folders
+tmp/
+temp/
+
+# Docker
+*.tar
+
+# Build artifacts
+build/
+out/
+
+# Static generation
+static/
+
+# Nuxt TypeScript
+.nuxt-types/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache/
+.parcel-cache/
+
+# Next.js build output (in case you switch)
+.next/
+
+# Nuxt.js generate
+generate/
+
+# Local netlify folder
+.netlify/

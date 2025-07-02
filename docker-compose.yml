@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # Production service
+  docs-ui-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: docs-ui-production
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - docs-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.docs-ui.rule=Host(`docs.example.com`)"
+      - "traefik.http.routers.docs-ui.tls=true"
+      - "traefik.http.routers.docs-ui.tls.certresolver=letsencrypt"
+
+  # Development service
+  docs-ui-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: docs-ui-development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.nuxt
+    environment:
+      - NODE_ENV=development
+      - NUXT_HOST=0.0.0.0
+      - NUXT_PORT=3000
+    command: npm run dev
+    networks:
+      - docs-network
+    profiles:
+      - dev
+
+  # Optional: Database service (if needed for future enhancements)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: docs-ui-postgres
+  #   environment:
+  #     POSTGRES_DB: docs_ui
+  #     POSTGRES_USER: docs_user
+  #     POSTGRES_PASSWORD: docs_password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - docs-network
+  #   profiles:
+  #     - with-db
+
+  # Optional: Redis service (for caching)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: docs-ui-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - docs-network
+  #   profiles:
+  #     - with-cache
+
+networks:
+  docs-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data: 
