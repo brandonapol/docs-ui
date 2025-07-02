@@ -88,5 +88,5 @@ generate/
 # Local netlify folder
 .netlify/
 
-.dist/
+# Build output
 dist/
