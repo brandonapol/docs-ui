@@ -1,0 +1,192 @@
+name: Build, Test, and Deploy
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  lint:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Check for lint issues
+      run: |
+        if npm run lint 2>&1 | grep -q "error\|Error"; then
+          echo "❌ Linting failed"
+          exit 1
+        else
+          echo "✅ Linting passed"
+        fi
+
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Generate static site
+      run: npm run generate
+      
+    - name: Test Docker build
+      run: |
+        echo "🐳 Testing Docker build..."
+        docker build -f Dockerfile.static -t docs-ui:test .
+        echo "✅ Docker build successful"
+        
+    - name: Test Docker container
+      run: |
+        echo "🧪 Testing Docker container..."
+        docker run -d --name test-container -p 8080:80 docs-ui:test
+        sleep 5
+        
+        # Test that the server responds
+        response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080)
+        if [ "$response" = "200" ]; then
+          echo "✅ Container is serving content correctly"
+        else
+          echo "❌ Container test failed (HTTP $response)"
+          docker logs test-container
+          exit 1
+        fi
+        
+        # Cleanup
+        docker stop test-container
+        docker rm test-container
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: static-site
+        path: .output/public/
+        retention-days: 7
+
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [lint, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write
+      id-token: write
+      contents: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: static-site
+        path: .output/public/
+        
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: .output/public
+        publish_branch: gh-pages
+        force_orphan: true
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'
+        commit_message: |
+          🚀 Deploy ${{ github.sha }}
+          
+          Built from: ${{ github.ref }}
+          Commit: ${{ github.event.head_commit.message }}
+          
+    - name: Build and push Docker image (optional)
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "🐳 Building final Docker image..."
+        docker build -f Dockerfile.static -t docs-ui:latest .
+        echo "✅ Production Docker image ready"
+        # Add Docker registry push here if needed:
+        # docker tag docs-ui:latest your-registry/docs-ui:latest
+        # docker push your-registry/docs-ui:latest
+
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    needs: [lint, build]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: static-site
+        path: .output/public/
+        
+    - name: Deploy Preview
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: .output/public
+        publish_branch: gh-pages-preview
+        force_orphan: true
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'
+        commit_message: |
+          🔍 Preview deployment for PR #${{ github.event.number }}
+          
+          Branch: ${{ github.head_ref }}
+          Commit: ${{ github.event.pull_request.head.sha }}
+          
+    - name: Comment PR with preview link
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { owner, repo } = context.repo;
+          const prNumber = context.payload.pull_request.number;
+          const previewUrl = `https://${owner}.github.io/${repo}`;
+          
+          await github.rest.issues.createComment({
+            owner,
+            repo,
+            issue_number: prNumber,
+            body: `🔍 **Preview deployed!**
+            
+            Preview URL: ${previewUrl}
+            Branch: \`gh-pages-preview\`
+            
+            This preview will be updated with each new commit to this PR.`
+          }); 

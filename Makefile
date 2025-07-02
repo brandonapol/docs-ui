@@ -1,5 +1,8 @@
 # Makefile for docs-ui project
 
+# Detect available container runtime
+DOCKER_CMD := $(shell command -v docker 2> /dev/null || command -v podman 2> /dev/null || echo "docker")
+
 .PHONY: help install dev build generate preview lint fix clean docker-build docker-run docker-clean test audit
 
 # Default target
@@ -42,19 +45,32 @@ clean-all: ## Clean everything including node_modules
 reinstall: clean-all install ## Clean and reinstall dependencies
 
 # Docker commands
-docker-build: ## Build Docker image
-	podman build -f Dockerfile -t docs-ui .
+docker-build: ## Build Docker image (requires local build first)
+	@echo "Building locally first..."
+	npm run generate
+	$(DOCKER_CMD) build -f Dockerfile.static -t docs-ui .
+
+docker-build-dev: ## Build Docker image with full build process (may fail due to native bindings)
+	$(DOCKER_CMD) build -f Dockerfile -t docs-ui .
 
 docker-run: ## Run Docker container
-	podman run -d -p 8080:80 --name docs-ui-container docs-ui
+	$(DOCKER_CMD) run -d -p 8080:80 --name docs-ui-container docs-ui
 
 docker-stop: ## Stop Docker container
-	podman stop docs-ui-container || true
-	podman rm docs-ui-container || true
+	$(DOCKER_CMD) stop docs-ui-container || true
+	$(DOCKER_CMD) rm docs-ui-container || true
 
 docker-clean: docker-stop ## Clean Docker containers and images
-	podman rmi docs-ui || true
+	$(DOCKER_CMD) rmi docs-ui || true
 	@echo "Cleaned Docker containers and images"
+
+deploy-prep: ## Prepare for deployment (build + test)
+	@echo "Preparing for deployment..."
+	make clean
+	make install
+	make lint
+	make generate
+	@echo "✅ Ready for deployment!"
 
 # Security and maintenance
 audit: ## Run npm audit
@@ -77,4 +93,33 @@ serve-static: ## Generate and serve static files
 fresh: clean-all install dev ## Complete fresh start (clean, install, dev)
 
 ci: install lint build ## CI/CD pipeline commands
-	@echo "CI pipeline completed successfully" 
+	@echo "CI pipeline completed successfully"
+
+ci-docker: install lint generate docker-build ## Full CI with Docker testing
+	@echo "🐳 Testing Docker container..."
+	@$(DOCKER_CMD) run -d --name test-container -p 8080:80 docs-ui:latest
+	@sleep 3
+	@if curl -f http://localhost:8080 > /dev/null 2>&1; then \
+		echo "✅ Docker container test passed"; \
+		$(DOCKER_CMD) stop test-container; \
+		$(DOCKER_CMD) rm test-container; \
+	else \
+		echo "❌ Docker container test failed"; \
+		$(DOCKER_CMD) logs test-container; \
+		$(DOCKER_CMD) stop test-container; \
+		$(DOCKER_CMD) rm test-container; \
+		exit 1; \
+	fi
+	@echo "🎉 Full CI pipeline with Docker testing completed successfully"
+
+ci-local: ## Run complete CI pipeline locally (same as GitHub Actions)
+	@echo "🚀 Running local CI pipeline..."
+	@echo "Step 1: Linting..."
+	@make lint
+	@echo "Step 2: Building..."
+	@make generate
+	@echo "Step 3: Docker build test..."
+	@make docker-build
+	@echo "Step 4: Docker container test..."
+	@make ci-docker
+	@echo "✅ Local CI pipeline completed - ready for deployment!" 

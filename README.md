@@ -1,5 +1,8 @@
 # Documentation Site
 
+[![Build and Deploy](https://github.com/yourusername/docs-ui/actions/workflows/deploy.yml/badge.svg)](https://github.com/yourusername/docs-ui/actions/workflows/deploy.yml)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://yourusername.github.io/docs-ui)
+
 A beautiful, modern documentation website built with Nuxt 3 and Nuxt Content.
 
 ## ✨ Features
@@ -198,9 +201,107 @@ Generate a static site for deployment:
 
 ```bash
 npm run generate
+# or using Makefile
+make generate
 ```
 
+### Docker Deployment
+
+Build and deploy using Docker (recommended for production):
+
+```bash
+# Quick deployment preparation
+make deploy-prep
+
+# Build Docker image (builds locally first to avoid native binding issues)
+make docker-build
+
+# Run the container
+make docker-run
+```
+
+### Available Make Commands
+
+**Development:**
+- `make dev` - Start development server
+- `make lint` - Check code quality with ESLint
+- `make fix` - Auto-fix ESLint issues
+- `make clean` - Clean build artifacts
+
+**Building:**
+- `make generate` - Generate static files
+- `make docker-build` - Build Docker image (production-ready)
+- `make deploy-prep` - Complete deployment preparation
+
+**CI/CD Testing:**
+- `make ci` - Basic CI pipeline (install + lint + build)
+- `make ci-docker` - Full CI with Docker testing
+- `make ci-local` - Complete local CI pipeline (same as GitHub Actions)
+
 The static files will be in the `.output/public/` directory.
+
+## 🔄 CI/CD Pipeline
+
+This project includes a comprehensive GitHub Actions workflow that automatically:
+
+### ✅ **Automated Testing**
+- **Code Quality**: ESLint checks on every push and PR
+- **Build Testing**: Generates static site and validates output
+- **Docker Testing**: Builds container and tests HTTP responses
+- **Multi-environment**: Tests on Node.js 20 with Ubuntu latest
+
+### 🚀 **Automated Deployment**
+- **Main Branch**: Auto-deploys to GitHub Pages on every push to `main`
+- **Pull Requests**: Creates preview deployments on `gh-pages-preview` branch
+- **Peaceiris Integration**: Uses `peaceiris/actions-gh-pages` for reliable deployments
+
+### 🌐 **GitHub Pages Setup**
+
+**Quick Setup:**
+```bash
+# Run the setup script to configure GitHub Pages
+./scripts/setup-github-pages.sh
+```
+
+**Manual Setup:**
+1. Go to your repository settings
+2. Navigate to "Pages" section
+3. Set source to "GitHub Actions"
+4. Push to `main` branch to trigger deployment
+
+**URLs:**
+- **Production**: `https://yourusername.github.io/docs-ui`
+- **Preview**: `https://yourusername.github.io/docs-ui` (branch: `gh-pages-preview`)
+
+### 🧪 **Local Testing**
+
+Test the complete CI pipeline locally before pushing:
+
+```bash
+# Run the same checks as GitHub Actions
+make ci-local
+
+# Test just Docker builds
+make ci-docker
+
+# Quick development checks
+make lint
+make generate
+```
+
+### 🔧 **Workflow Triggers**
+
+The CI/CD pipeline runs on:
+
+- **Push to `main`**: Full pipeline + deployment to GitHub Pages
+- **Push to `develop`**: Full pipeline (no deployment)  
+- **Pull Requests to `main`**: Full pipeline + preview deployment
+
+**Pipeline Stages:**
+1. **Lint** → ESLint code quality checks
+2. **Build** → Static site generation + Docker build/test
+3. **Deploy** → GitHub Pages deployment (main branch only)
+4. **Preview** → Preview deployment (PRs only)
 
 ### Deployment Platforms
 

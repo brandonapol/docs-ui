@@ -72,7 +72,7 @@ jspm_packages
 # Nuxt.js build / generate output
 .nuxt
 dist
-.output
+# .output - allow for static builds
 
 # Gatsby files
 public
@@ -116,6 +116,10 @@ ehthumbs.db
 Dockerfile
 docker-compose*.yml
 .dockerignore
+
+# Include Docker-specific config files
+! package.docker.json
+! nuxt.config.docker.ts
 
 # Specific documentation files (more targeted than *.md)
 README.md
